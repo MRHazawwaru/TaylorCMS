@@ -1,0 +1,25 @@
+import nodemailer from "nodemailer";
+
+export const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Fungsi pembungkus agar pengiriman email lebih mudah dipanggil
+export const sendMail = async (to: string, subject: string, html: string) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Taylor CMS Security" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    return info;
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    throw error;
+  }
+};

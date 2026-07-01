@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabel untuk autentikasi Admin
+model User {
+  id                 String   @id @default(cuid())
+  name               String
+  email              String   @unique
+  password           String
+  role               String   @default("ADMIN")
+  lastPasswordChange DateTime @default(now()) // Kolom baru untuk melacak umur password
+  // --- TAMBAHAN UNTUK 2FA ---
+  twoFactorSecret    String?  // Menyimpan kunci rahasia authenticator
+  isTwoFactorEnabled Boolean  @default(false) // Penanda apakah 2FA menyala atau mati
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// Tabel untuk profil dinamis perusahaan Taylor
+model CompanyInfo {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  address     String?  @db.Text
+  phone       String?
+  email       String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Tabel untuk layanan yang ditawarkan (misal: Jahit Jas, Kebaya, dll)
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  price       String?  // Menggunakan String agar bisa diisi "Mulai dari Rp50.000"
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Tabel untuk galeri hasil jahitan
+model Portfolio {
+  id          String   @id @default(cuid())
+  title       String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
