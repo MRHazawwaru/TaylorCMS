@@ -87,7 +87,7 @@ export default function AddAdminPage() {
             <input
               {...register("name")}
               type="text"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full px-4 py-2 border text-slate-700 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               placeholder="Contoh: Arif Taylor"
             />
             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
@@ -100,7 +100,7 @@ export default function AddAdminPage() {
             <input
               {...register("email")}
               type="email"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full px-4 py-2 border text-slate-700 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               placeholder="admin@taylor.com"
             />
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
@@ -113,7 +113,7 @@ export default function AddAdminPage() {
             <input
               {...register("password")}
               type="password"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full px-4 py-2 border text-slate-700 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               placeholder="Minimal 8 karakter"
             />
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
