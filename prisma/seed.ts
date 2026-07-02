@@ -9,13 +9,16 @@ async function main() {
 
   // 2. Buat akun Admin menggunakan metode 'upsert'
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@taylor.com' },
-    update: {}, // Jika sudah ada, jangan lakukan apa-apa
+    where: { email: "admin@taylor.com" },
+    // PAKSA update password dengan enkripsi taylor123 yang baru
+    update: { 
+      password: hashedPassword 
+    }, 
     create: {
-      name: 'Admin Taylor',
-      email: 'admin@taylor.com',
+      name: "Admin Taylor",
+      email: "admin@taylor.com",
       password: hashedPassword,
-      role: 'ADMIN',
+      role: "ADMIN",
     },
   });
 
