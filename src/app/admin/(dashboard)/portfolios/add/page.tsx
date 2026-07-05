@@ -171,7 +171,7 @@ export default function AddPortfolioPage() {
             ) : (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Tempel URL Gambar di sini</label>
-                <input {...register("imageUrl")} type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://contoh.com/gambar.jpg" />
+                <input {...register("imageUrl")} type="text" className="w-full px-4 py-2 border text-slate-500 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://contoh.com/gambar.jpg" />
                 
                 {watchImageUrl && (
                   <div className="mt-4">
