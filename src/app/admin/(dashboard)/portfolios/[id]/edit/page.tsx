@@ -33,31 +33,36 @@ export default function EditPortfolioPage({ params }: { params: Promise<{ id: st
 
   const watchImageUrl = watch("imageUrl");
 
-  useEffect(() => {
-    const fetchPortfolio = async () => {
-      try {
-        const res = await fetch(`/api/portfolios/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          reset({ title: data.title, imageUrl: data.imageUrl || "" });
-          setExistingImage(data.imageUrl);
-          
-          // Deteksi otomatis: Jika URL dimulai dengan /uploads/, berarti itu file lokal
-          if (data.imageUrl && data.imageUrl.startsWith("/uploads/")) {
-            setUploadMethod("local");
-            setPreviewLocal(data.imageUrl); // Set preview awal menggunakan gambar lama
-          } else {
-            setUploadMethod("url");
-          }
+useEffect(() => {
+  const fetchPortfolio = async () => {
+    try {
+      const res = await fetch(`/api/portfolios/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        reset({ title: data.title, imageUrl: data.imageUrl || "" });
+        setExistingImage(data.imageUrl);
+        
+        // 🛠️ DETEKSI OTOMATIS YANG DIPERBAIKI:
+        // Jika URL berisi '/uploads/' ATAU mengandung domain 'cloudinary.com',
+        // kita kunci metodenya sebagai "local" agar masuk ke preview upload komputer.
+        if (
+          data.imageUrl && 
+          (data.imageUrl.startsWith("/uploads/") || data.imageUrl.includes("cloudinary.com"))
+        ) {
+          setUploadMethod("local");
+          setPreviewLocal(data.imageUrl); 
+        } else {
+          setUploadMethod("url");
         }
-      } catch (error) {
-        console.error("Gagal load data", error);
-      } finally {
-        setIsLoadingData(false);
       }
-    };
-    fetchPortfolio();
-  }, [id, reset]);
+    } catch (error) {
+      console.error("Gagal load data", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+  fetchPortfolio();
+}, [id, reset]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
