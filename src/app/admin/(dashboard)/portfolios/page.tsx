@@ -13,16 +13,27 @@ type Portfolio = {
 export default function PortfoliosPage() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fetchPortfolios = async () => {
     try {
       const res = await fetch("/api/portfolios");
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+
+      // 🛡️ BAJU ZIRAH 1: Pastikan data yang masuk BENAR-BENAR Array
+      if (res.ok && Array.isArray(data)) {
         setPortfolios(data);
+        setErrorMsg(null);
+      } else {
+        // Jika server error (misal 500 karena limit koneksi DB), tangkap dengan aman
+        console.error("API merespon error atau bukan array:", data);
+        setPortfolios([]); // Kunci paksa ke array kosong agar .map tidak meledak
+        setErrorMsg("Gagal memuat data dari database. Server sedang sibuk.");
       }
     } catch (error) {
       console.error("Gagal mengambil data:", error);
+      setPortfolios([]);
+      setErrorMsg("Terjadi kesalahan jaringan.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +93,15 @@ export default function PortfoliosPage() {
                     Memuat data...
                   </td>
                 </tr>
-              ) : portfolios.length === 0 ? (
+              ) : errorMsg ? (
+                // 🛡️ BAJU ZIRAH 2: Tampilkan pesan error jika server menolak koneksi
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-red-500 font-medium">
+                    {errorMsg}
+                  </td>
+                </tr>
+              ) : !Array.isArray(portfolios) || portfolios.length === 0 ? (
+                // 🛡️ BAJU ZIRAH 3: Validasi mutlak untuk mencegah crash e.map is not a function
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-slate-500">
                     Belum ada foto di galeri.
