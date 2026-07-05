@@ -16,17 +16,27 @@ type Service = {
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Fungsi untuk mengambil data dari API yang kita buat di Fase 3
+  // Fungsi untuk mengambil data dari API
   const fetchServices = async () => {
     try {
       const res = await fetch("/api/services");
       const data = await res.json();
-      if (res.ok) {
+
+      // 🛡️ BAJU ZIRAH 1: Pastikan data benar-benar Array
+      if (res.ok && Array.isArray(data)) {
         setServices(data);
+        setErrorMsg(null);
+      } else {
+        console.error("API error atau bukan array:", data);
+        setServices([]); 
+        setErrorMsg("Gagal memuat data layanan dari server.");
       }
     } catch (error) {
       console.error("Gagal mengambil data:", error);
+      setServices([]);
+      setErrorMsg("Terjadi kesalahan jaringan.");
     } finally {
       setLoading(false);
     }
@@ -93,7 +103,15 @@ export default function ServicesPage() {
                     Memuat data...
                   </td>
                 </tr>
-              ) : services.length === 0 ? (
+              ) : errorMsg ? (
+                // 🛡️ BAJU ZIRAH 2: Tampilkan pesan error jika server sedang sibuk/menolak
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-red-500 font-medium">
+                    {errorMsg}
+                  </td>
+                </tr>
+              ) : !Array.isArray(services) || services.length === 0 ? (
+                // 🛡️ BAJU ZIRAH 3: Validasi kuat agar .map tidak meledak
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-slate-500">
                     Belum ada data layanan. Silakan tambah baru.
