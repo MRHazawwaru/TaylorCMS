@@ -2,53 +2,52 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache"; // <-- IMPORT TAMBAHAN
 
-// [PUBLIK] Endpoint untuk mengambil semua data layanan
+// [PUBLIK] Ambil data perusahaan (digunakan untuk Admin Form & Landing Page nanti)
 export async function GET() {
   try {
-    // Menarik semua data dari database, diurutkan dari yang paling baru dibuat
-    const services = await prisma.service.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    const company = await prisma.companyInfo.findFirst();
     
-    return NextResponse.json(services, { status: 200 });
+    if (!company) {
+      return NextResponse.json({ error: "Data perusahaan tidak ditemukan" }, { status: 404 });
+    }
+
+    return NextResponse.json(company, { status: 200 });
   } catch (error) {
-    console.error("Error GET Services:", error);
-    return NextResponse.json({ error: "Gagal mengambil data layanan" }, { status: 500 });
+    console.error("Error GET Company:", error);
+    return NextResponse.json({ error: "Gagal mengambil data" }, { status: 500 });
   }
 }
 
-// [PRIVAT] Endpoint untuk menambah data layanan baru
-export async function POST(request: Request) {
+// [PRIVAT] Update data perusahaan
+export async function PUT(request: Request) {
   try {
-    // 1. Validasi Keamanan: Cek apakah yang melakukan request adalah Admin yang sedang login
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Akses ditolak. Anda bukan Admin." }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Ambil data yang dikirim dari form frontend
     const body = await request.json();
-    const { title, description, price, imageUrl } = body;
+    const { name, description, address, phone, email } = body;
 
-    // 3. Validasi Data Kosong (Mencegah blank data masuk ke database)
-    if (!title || !description) {
-      return NextResponse.json({ error: "Judul dan Deskripsi wajib diisi." }, { status: 400 });
+    const existingCompany = await prisma.companyInfo.findFirst();
+
+    if (!existingCompany) {
+      return NextResponse.json({ error: "Data perusahaan belum di-seed" }, { status: 400 });
     }
 
-    // 4. Eksekusi query tambah data ke MySQL
-    const newService = await prisma.service.create({
-      data: {
-        title,
-        description,
-        price,
-        imageUrl,
-      },
+    const updatedCompany = await prisma.companyInfo.update({
+      where: { id: existingCompany.id },
+      data: { name, description, address, phone, email },
     });
 
-    return NextResponse.json(newService, { status: 201 });
+    // 🔥 Hancurkan cache landing page setelah update sukses
+    revalidatePath("/");
+
+    return NextResponse.json(updatedCompany, { status: 200 });
   } catch (error) {
-    console.error("Error POST Service:", error);
-    return NextResponse.json({ error: "Terjadi kesalahan pada server saat menambah data" }, { status: 500 });
+    console.error("Error PUT Company:", error);
+    return NextResponse.json({ error: "Gagal menyimpan data perusahaan" }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache"; // <-- IMPORT TAMBAHAN
 
 // [PUBLIK/PRIVAT] Endpoint untuk mengambil 1 data layanan secara spesifik
 export async function GET(
@@ -30,7 +31,7 @@ export async function GET(
 // [PRIVAT] Endpoint untuk Edit data layanan
 export async function PUT(
   request: Request,
-  context: { params: Promise<{ id: string }> } // 1. Ubah tipe data params menjadi Promise
+  context: { params: Promise<{ id: string }> } 
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -38,7 +39,6 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. PERBAIKAN DI SINI: Kita harus 'await' params sebelum mengambil id
     const params = await context.params;
     const { id } = params;
 
@@ -47,13 +47,11 @@ export async function PUT(
 
     const updatedService = await prisma.service.update({
       where: { id },
-      data: {
-        title,
-        description,
-        price,
-        imageUrl,
-      },
+      data: { title, description, price, imageUrl },
     });
+
+    // 🔥 Hancurkan cache landing page setelah edit sukses
+    revalidatePath("/");
 
     return NextResponse.json(updatedService, { status: 200 });
   } catch (error) {
@@ -65,7 +63,7 @@ export async function PUT(
 // [PRIVAT] Endpoint untuk Hapus data layanan
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ id: string }> } // 1. Ubah tipe data params menjadi Promise
+  context: { params: Promise<{ id: string }> } 
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -73,13 +71,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. PERBAIKAN DI SINI: Kita harus 'await' params sebelum mengambil id
     const params = await context.params;
     const { id } = params;
 
     await prisma.service.delete({
       where: { id },
     });
+
+    // 🔥 Hancurkan cache landing page setelah hapus sukses
+    revalidatePath("/");
 
     return NextResponse.json({ message: "Layanan berhasil dihapus" }, { status: 200 });
   } catch (error) {
